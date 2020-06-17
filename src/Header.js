@@ -4,7 +4,7 @@ function Header() {
     return (
         <appBar position="fixed">
             <toolbar>
-                <Typography variant="h5">
+                <Typography variant="h6">
                     Carros
                 </Typography>
             </toolbar>
