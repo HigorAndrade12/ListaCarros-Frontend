@@ -1,196 +1,141 @@
-import React, { useState, useEffect, Icon } from 'react';
+import React, { useState, useMemo } from 'react';
+import Header from './Header';
 import api from './api';
-import Header from './header';
-import { 
-    Container, 
-    Table, 
-    TableRow, 
-    TableCell, 
-    TableHead,
-    Dialog, 
-    Button, 
-    DialogTitle, 
-    DialogContent, 
-    DialogContentText, 
-    TextField, 
-    DialogActions} from '@material-ui/core';
-import './style.css';
+import { Table, TableRow, TableCell, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@material-ui/core';
+import DeleteIcon from '@material-ui/icons/Delete';
 
-function App() {
-    const [ lista, setLista ] = useState([]); // imutabilidade
+function ListaPage() { 
+
+    const [ carro, setCarros ] = useState([]);
+    const [ cor, setCor ] = useState('');
     const [ open, setOpen ] = useState(false);
-    const [ id, setId] = useState('');
-    const [ modelo, setModelo ] = useState('');
+    const [ modelo, setModelo ] = useState(0);
     const [ placa, setPlaca ] = useState('');
-    const [ ano, setAno ] = useState('');
-    const [ botaoEditar, setBotaoEditar ] = useState(false);
-    const [ botaoAdicionar, setBotaoAdicionar ] = useState(false);
+    const [ id, setId ] = useState(0);
     
-    function openModal() {
-        setBotaoAdicionar(true);
-        setBotaoEditar(false);
-        setOpen(true);
-    };
 
-    function closeModal() {
+    async function loadData() { 
+
+       const response = await api.get('/carros');
+            const carro = response.data;
+            setCarros(carros);
+    }
+
+    useMemo(loadData, []);
+
+    function openDialog() { 
+        setOpen(true);
+    }
+
+     function closeDialog() {
         setOpen(false);
-    };
-
-    function listaCarros(){
-         api.get('/carros').then((response) => {
-           const itens = response.data;
-              setLista(itens);
-              setId('');
-              setModelo('');
-              setPlaca('');
-              setAno('');
-        });
     }
 
-    useEffect(() => {
-        listaCarros();
-    }, []);
-    
-    function addCarro(){
-        const model = modelo;
-        const plac = placa;
-        const year = ano;
+    async function salvar() { 
+        if(id === 0) {
+        await api.post('/carros', { cor, modelo, placa }); 
+        }
+        else {
+             await api.put(`/carros/${id}`, { cor, modelo, placa });
+        }
 
-        api.post('/carros', {modelo:model, placa:plac, ano:year}).then((response) => {
-            setModelo('');
-            setPlaca('');
-            setAno('');
-            setOpen(false);
-            listaCarros();
-        });
+        loadData();
+        setCor('');
+        setModelo();
+        setPlaca('');
+        setId(0);
+        closeDialog();
     }
 
-    function deleteCarro(id){
-        api.delete(`/carros/${id}`).then((response) => {
-            listaCarros();
-        });
-    }
-  
-
-    function openEditar(id,modelo,placa,ano){
-        setBotaoAdicionar(false);
-        setBotaoEditar(true);
-        setOpen(true);
-        setId(id);
-        setModelo(modelo);
-        setPlaca(placa);
-        setAno(ano);
+      async function apagar(id) {
+        await api.delete(`/carros/${id}`);
+        loadData();
     }
 
-    function editarcarro(){
-        api.put(`/carros/${id}`,{modelo:modelo,placa:placa,ano:ano}).then((response) => {
-            setOpen(false);
-            setId('');
-            setModelo('');
-            setPlaca('');
-            setAno('');
-            listaCarros();
-        });
+    async function editar(carros) {
+        setCor(carros.cor);
+        setModelo(carros.modelo);
+        setPlaca(carros.placa);
+        setId(carros.id);
+        openDialog();
     }
-   return (
+
+  return (
         <>
-         <Header />
-         <Container maxWidth="lg" className="container"> 
-            <Table>
-                
-                <TableHead>
-                    <TableRow>
-                        <TableCell>ID</TableCell>
-                        <TableCell>Modelo</TableCell>
-                        <TableCell>Placa</TableCell>
-                        <TableCell>Ano</TableCell>
-                        <TableCell>Ações</TableCell>
-                    </TableRow>
-                </TableHead>
-                {lista.map(itens => (
-                    <TableRow key={itens.id}>
-                        <TableCell>{itens.id}</TableCell>
-                        <TableCell>{itens.modelo}</TableCell>
-                        <TableCell>{itens.placa}</TableCell>
-                        <TableCell>{itens.ano}</TableCell>
+            <Header />
+            <Table style={{ marginTop: '80px' }}>
 
-                        <TableCell>
-                           
-                            &nbsp;
-                            <Button 
-                                color="primary"
-                                variant="outlined" 
-                                onClick={() => openEditar(itens.id,itens.modelo,itens.placa,itens.ano)}
-                                size="small"> 
-                                Editar Carro
-                            </Button>
-                            &nbsp;
-                            <Button 
-                                onClick={() => deleteCarro(itens.id)}
-                                variant="outlined" 
-                                size="small" 
-                                color="secondary">Carro despachado</Button>
-                        </TableCell>
-                    </TableRow>
-                ))}
+                {
+                carros.map(carro => (
+                    <TableRow>
+                        <TableCell>{carro.id}</TableCell>
+                        <TableCell>{carro.cor}</TableCell>
+                        <TableCell>{carro.modelo}</TableCell>
+                        <TableCell>{carro.placa}</TableCell>
+                         <TableCell>
+                             <Button variant="outlined"
+                                    color="secondary"
+                                    size="small"
+                                    onClick={() => apagar(carro.id)}>
+                                    <DeleteIcon />Apagar
+                                    </Button>
+                         </TableCell>
+                            <TableCell>
+                                <Button variant="outlined"
+                                    color="secondary"
+                                    size="small"
+                                    onClick={() => editar(carro)}>
+                                    Editar
+                                </Button>
+                            </TableCell>
+                        </TableRow>
+                    ))
+                }
             </Table>
-            <Button 
-                onClick={openModal}
-                variant="contained" 
-                color="primary" 
-                style={{marginTop: '20px'}}>
-                Adicionar
-            </Button>
-         </Container>
-         <Dialog open={open} onClose={closeModal} fullWidth={true} maxWidth="sm">
-            <DialogTitle id="form-dialog-title">Carro</DialogTitle>
-            <DialogContent>
-                <DialogContentText>
-                    Digite as informações do Carro.
-                </DialogContentText>
+        <Button
+                onClick={openDialog}
+                variant="contained"
+                color="primary">Adicionar</Button>
+
+        <Dialog open={open} onClose={closeDialog}>
+            <DialogTitle>{id === 0 ? 'Novo': 'Editar'} carro </DialogTitle>
+            <DialogContent>{id === 0 ? 'Cadastrar': 'Edita'} Novo carro:
                 <TextField
                     autoFocus
                     margin="dense"
-                    id="modelo"
-                    label="Modelo"
-                    autoComplete="off"
+                    id="cor"
+                    label="cor"
                     type="text"
                     fullWidth
-                    value={modelo}
+                    value={item}
+                    onChange={e => setCor(e.target.value)}
+                />
+                <TextField
+                    margin="dense"
+                    id="modelo"
+                    label="modelo"
+                    type="text"
+                    fullWidth
+                    value={valor}
                     onChange={e => setModelo(e.target.value)}
                 />
                 <TextField
                     margin="dense"
                     id="placa"
-                    label="Placa"
-                    autoComplete="off"
+                    label="placa"
                     type="text"
                     fullWidth
-                    value={placa}
+                    value={tamanho}
                     onChange={e => setPlaca(e.target.value)}
                 />
-                <TextField
-                    margin="dense"
-                    id="ano"
-                    label="Ano"
-                    autoComplete="off"
-                    type="text"
-                    fullWidth
-                    value={ano}
-                    onChange={e => setAno(e.target.value)}
-                />
-               
             </DialogContent>
             <DialogActions>
-                <Button onClick={closeModal} color="primary">
-                    Cancelar
-                </Button>
-                <Button color="primary" onClick={botaoEditar ? editarcarro : addCarro }>
-                    Salvar Carro
-                </Button>
+                <Button onClick={closeDialog}>Cancelar</Button>
+                <Button onClick={salvar}>{id === 0 ? 'Salvar' : 'Atualizar'}</Button>
             </DialogActions>
-         </Dialog>
-        </>
-    )
+        </Dialog>
+    </>
+  )
+
 }
-export default App;
+export default ListaPage;
