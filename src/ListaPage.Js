@@ -6,7 +6,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 
 function ListaPage() { 
 
-    const [ carro, setCarros ] = useState([]);
+    const [ carros, setCarros ] = useState([]);
     const [ cor, setCor ] = useState('');
     const [ open, setOpen ] = useState(false);
     const [ modelo, setModelo ] = useState(0);
@@ -17,7 +17,7 @@ function ListaPage() {
     async function loadData() { 
 
        const response = await api.get('/carros');
-            const carro = response.data;
+            const carros = response.data;
             setCarros(carros);
     }
 
@@ -125,7 +125,7 @@ function ListaPage() {
                     label="placa"
                     type="text"
                     fullWidth
-                    value={tamanho}
+                    value={placa}
                     onChange={e => setPlaca(e.target.value)}
                 />
             </DialogContent>
