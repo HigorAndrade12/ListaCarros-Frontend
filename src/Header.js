@@ -1,14 +1,17 @@
 import React from 'react';
-import {appBar, ToolBar, Typography} from'@material-ui/core';
+import { AppBar, Toolbar, Typography } from '@material-ui/core';
+
 function Header() {
+
     return (
-        <appBar position="fixed">
-            <toolbar>
+        <AppBar position="fixed">
+            <Toolbar>
                 <Typography variant="h6">
-                    Carros
+                    Itens para venda
                 </Typography>
-            </toolbar>
-        </appBar>
-    );
-};
+            </Toolbar>
+        </AppBar>
+    )
+}
+
 export default Header;
