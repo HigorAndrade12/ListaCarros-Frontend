@@ -72,7 +72,7 @@ function ListaPage() {
     }
 
     async function salvarUpdate() { 
-        await api.put(`/${id}`, { cor, modelo, placa });
+        await api.put(`/${id}`, {id, cor, modelo, placa });
           
         loadData();
         closeDialogUpdate();
