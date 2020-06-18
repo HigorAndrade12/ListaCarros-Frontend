@@ -1,7 +1,7 @@
 import axios from 'axios';
-const api = axios.crate({
+const Api = axios.create({
 
-    baseURL: 'https://projetolistadecarro.herokuapp.com',
+    baseURL: 'https://projetolistadecarro-backend.herokuapp.com/',
     
 });
-export default api;
+export default Api;
